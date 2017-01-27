@@ -44,7 +44,7 @@ RPM.STRATEGY	= copy
 
 include $(STACKBUILD)/etc/CCRules.mk
 
-refresh: 
+refresh::
 	rm -fr ./RPMS
 	mkdir ./RPMS
 
@@ -54,3 +54,4 @@ build:
 rpm::	build
 	reposync -d -p ./RPMS -n -r dockerrepo -c ./docker.repo --norepopath
 	cp -p ./RPMS/Packages/*.x86_64.rpm $(REDHAT.RPMS)/x86_64/
+	cp -p ./RPMS/Packages/*.noarch.rpm $(REDHAT.RPMS)/noarch/

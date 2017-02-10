@@ -1,0 +1,1 @@
+NAME = docker-swarm-demos

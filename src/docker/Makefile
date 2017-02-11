@@ -50,6 +50,7 @@ refresh::
 
 build:
 	mkdir -p $(REDHAT.RPMS)/x86_64/
+	mkdir -p $(REDHAT.RPMS)/noarch/
 
 rpm::	build
 	reposync -d -p ./RPMS -n -r dockerrepo -c ./docker.repo --norepopath

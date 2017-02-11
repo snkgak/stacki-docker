@@ -12,19 +12,20 @@
 	(c) 2006 - 2016 StackIQ Inc.
 	All rights reserved. stacki(r) v3.1 www.stacki.com
 	</si_copyright>
-
-
-	<edge from="base" to="stacki-docker-base" />
+	
+	<order head="server" tail="stacki-docker-server"/>
 	<edge from="server" to="stacki-docker-server" />
-	<edge from="client" to="stacki-docker-client" />
 
-	<!-- Add ordering of edges here. This defines
-	     the order in which the node XML files
-	     are run -->
-	<!--
-	     For example, to run the post section in stacki-docker-base
-	     after the resolv.xml from the stacki pallet, use the
-	     following directive
-	     <order head="resolv" tail="stacki-docker-base" />
-	-->
+	<order head="backend" tail="stacki-docker-base"/>
+	<edge from="backend" to="stacki-docker-base" />
+
+	<order head="stacki-docker-base" tail="stacki-docker-backend"/>
+	<edge from="stacki-docker-base" to="stacki-docker-backend" />
+
+	<order cond="docker.swarm.manager" head="stacki-docker-backend" tail="stacki-docker-swarm-manager"/>
+	<edge cond="docker.swarm.manager" from="stacki-docker-backend" to="stacki-docker-swarm-manager" />
+
+	<order cond="not docker.swarm.manager" head="stacki-docker-backend" tail="stacki-docker-swarm"/>
+	<edge cond="not docker.swarm.manager" from="stacki-docker-backend" to="stacki-docker-swarm" />
+
 </graph>

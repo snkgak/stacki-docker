@@ -12,6 +12,10 @@
 	All rights reserved. stacki(r) v3.1 www.stacki.com
 	</si_copyright>
 
+<package disable="1">iwl*</package>
+<package disable="1">ivtv*</package>
+<package meta="1">@core</package>
+
 <post cond="sync.hosts">
 <file name="/etc/hosts">
 <eval>

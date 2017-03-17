@@ -15,6 +15,11 @@
 <package>stacki-docker-spreadsheets</package>
 
 <post>
+stack set attr attr=sync.hosts value=true
+stack set attr attr=ssh.use_dns value=false
+</post>
+
+<post>
 mkdir -p /var/lib/docker-swarm
 </post>
 

@@ -12,6 +12,14 @@
 	All rights reserved. stacki(r) v3.1 www.stacki.com
 	</si_copyright>
 
+<post cond="sync.hosts">
+<file name="/etc/hosts">
+<eval>
+cat /etc/hosts
+</eval>
+</file>
+</post>
+
 <post>
 mkdir -p /etc/security/ca
 

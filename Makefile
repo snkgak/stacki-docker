@@ -43,4 +43,7 @@ ROLLROOT = .
 include $(PALLETBUILD)/etc/CCRolls.mk
 
 refresh:
+	$(MAKE) clean.all	
+	$(MAKE) nuke.all	
+	rm -fr build*
 	$(MAKE) -C src refresh

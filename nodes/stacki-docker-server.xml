@@ -12,6 +12,8 @@
 	All rights reserved. stacki(r) v3.1 www.stacki.com
 	</si_copyright>
 
+<package>stacki-docker-spreadsheets</package>
+
 <post>
 mkdir -p /var/lib/docker-swarm
 </post>

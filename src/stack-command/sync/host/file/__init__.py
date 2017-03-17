@@ -1,3 +1,4 @@
+#
 # @SI_Copyright@
 #                             www.stacki.com
 #                                  v3.1
@@ -38,21 +39,88 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # @SI_Copyright@
+#
 
-ROLLROOT	= ../..
-RPM.STRATEGY	= copy
+import sys
+import stack.commands
+import os.path
+from stack.exception import *
+from stack.commands.sync.host import Parallel
+from stack.commands.sync.host import timeout
 
-include $(STACKBUILD)/etc/CCRules.mk
 
-refresh::
-	rm -fr ./RPMS
-	mkdir ./RPMS
+class Command(stack.commands.sync.host.command):
+	"""
+	Sync an arbitrary file to backend nodes.
+	
+	<param type='string' name='src' optional='0'>
+        </param>
 
-build:
-	mkdir -p $(REDHAT.RPMS)/x86_64/
-	mkdir -p $(REDHAT.RPMS)/noarch/
+	<param type='string' name='dest' optional='0'>
+        </param>
 
-rpm::	build
-	reposync -d -p ./RPMS -n -r docker-ce-stable -c ./docker.ce.repo --norepopath
-	cp -p ./RPMS/Packages/*.x86_64.rpm $(REDHAT.RPMS)/x86_64/
-	cp -p ./RPMS/Packages/*.noarch.rpm $(REDHAT.RPMS)/noarch/
+	<param type='string' name='service'>
+	</param>
+	
+	
+	<example cmd='sync host yum'>
+	Giving no hostname or regex will sync
+        to all backend nodes by default.
+	</example>
+
+	<example cmd='sync host yum backend-0-0'>
+	Sync yum inventory file on backend-0-0
+	</example>
+	
+	<example cmd='sync yum backend-0-[0-2]'>
+	Using regex, sync yum inventory file on backend-0-0
+	backend-0-1, and backend-0-2.
+	</example>
+	"""
+
+	def run(self, params, args):
+		src,dest = self.fillParams([
+                        ('src', None),
+                        ('dest', None)
+                        ])
+
+		hosts = self.getHostnames(args, managed_only=1)
+		me = self.db.getHostname('localhost')
+
+				
+		if not src:
+			raise ParamError(self,'src', "- no source is given.")
+
+		if not os.path.isfile(src):
+			if os.path.isdir(src):
+				recurse = True
+			else:
+				raise CommandError(self, '%s is not a file or a directory' % src)
+
+		if not dest:
+			raise ParamError(self,'dest', "- no destination is given.")
+			
+		threads = []
+		for host in hosts:
+			if me != host:
+				if recurse:
+					cmd = 'scp -r %s %s:%s ' % (host,src,dest)
+				else:
+					cmd = 'scp %s %s:%s ' % (host,src,dest)
+
+			cmd += 'bash > /dev/null 2>&1 '
+
+			try:
+				p = Parallel(cmd)
+				p.start()
+				threads.append(p)
+			except:
+				pass
+
+		#
+		# collect the threads
+		#
+		for thread in threads:
+			thread.join(timeout)
+
+RollName = "stacki"

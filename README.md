@@ -5,12 +5,13 @@ with the stacki-kubernetes pallet. Just follow those docs and you'll
 be good. **
 
 <h3>tl;dr</h3>
+
 Download isos:
 ```
 # cd /export
 # mkdir isos
 # cd isos
-# wget 
+# wget yeahimmagettalistforyourealsoon.
 ```
 
 Add/enable/disable pallets:
@@ -29,7 +30,7 @@ cd /export/stack/spreadsheets/examples
 cat global-docker-attrs-swarm.csv 
 ```
 
-Change the master ip info, the 10.1.255.254 should be the ip of
+Change the master ip info. the 10.1.255.254 should be the ip of
 whatever your docker swarm master will be.
 
 Swarm is default enabled. Don't run the pallet if you're using
@@ -77,7 +78,7 @@ The "mkfsoptions" is a requirement for whatever you put it on.
 # stack load storage partition file=docker-partitions.csv 
 ```
 
-If you want moniting, use the stacki-prometheus pallet, AFTER
+If you want monitoring, use the stacki-prometheus pallet, AFTER
 you've done everything above.
 ```
 stack run pallet stacki-prometheus | bash

@@ -1,10 +1,12 @@
-StackIQ creates application pallets in phases. Phase 1 means an application will run correctly at it's basic usuable level and will be available upon installaction. Generally, there is little if any in the way of security; it's likely to follow the application's simple case documentation.
+This is the open source stacki-docker pallet for Stacki based systems. There's noting to pay for here. It's free, as in beer, and free as in your nethers when skinny-dipping. Enjoy.
 
-Phase 2 means the application will install on first installation of a set of machines securely, working for more complex cases and examples, and more flexible. It's probably production ready. It's more it's better, but it probably needs some further work.
+StackIQ creates application pallets in phases. Phase 1 means an application will run correctly at it's basic usuable level and will be available upon installaction. Generally, there is little if any in the way of security; it's likely to follow the application's simple case documentation. We did that in Phase 1. If you want that, you can check out the 1.13.0 tag but it contains only Docker software, before they created the Community Edition which was, like, last week.
 
-Phase 3 will definitely be production ready, will allow for greater security and flexibility; however, that flexibility will require you do more stuff to get it that way.
+Phase 2 means the application will install on first installation of a set of machines securely, working for more complex cases and examples, and more flexible. It's probably production ready. It's more, it's better, but it probably needs some further work to make it more flexible for your use case.
 
-All that being said, this is phase2 of the docker pallet. It runs Docker Community Editition (17.03.0), has docker swarm mode baked in (installs and validates it automatically thankyouverymuch) and it TLS protected. If you are interested in just Docker and Docker Swarm Mode, this is the pallet and the instructions you should follow.
+Phase 3 will definitely be production ready, will allow for greater security and flexibility; however, that flexibility will require you do more stuff to get it the way you want it. Phase 3 for stacki-docker will likely be done on stacki 4.0 which will be out in about a month.
+
+All that being said, this is phase2 of the docker pallet. It runs Docker Community Edition (17.03.0), has docker swarm mode baked in (installs and validates it automatically thankyouverymuch) and it TLS protected. If you are interested in just Docker and Docker Swarm Mode, this is the pallet and the instructions you should follow.
 
 *** Warning: Don't do any of this if you are using stacki-docker
 with the stacki-kubernetes pallet. Just follow those docs and you'll
@@ -21,7 +23,12 @@ Download isos:
 # cd /export
 # mkdir isos
 # cd isos
-# wget yeahimmagettalistforyourealsoon.
+# wget https://s3.amazonaws.com/stacki/public/os/centos/7/CentOS-7-x86_64-Everything-1611.iso
+# wget https://s3.amazonaws.com/stacki/public/os/centos/7/CentOS-Updates-7.3-7.x.x86_64.disk1.iso
+# wget https://s3.amazonaws.com/stacki/public/pallets/3.2/open-source/stacki-docker-17.03.0-3.2_phase2.x86_64.disk1.iso
+
+If you want monitoring:
+# wget https://s3.amazonaws.com/stacki/public/pallets/3.2/open-source/stacki-prometheus-1.0-7.x.x86_64.disk1.iso
 ```
 
 Add/enable/disable pallets:
@@ -103,8 +110,7 @@ Install your hosts:
 
 Now power cycle. When they come up, if you've used stacki prometheus,
 you'll have access at: 
-http://<frontendIP>:9090 for prometheus
-http://<frontendIP>:3000 for grafana
-http://<frontendIP>:8008 for sflow-rt
+http://frontend.IP:9090 for prometheus
+http://frontendIP.IP:3000 for grafana
 
 <h3>Detailed Explanation</h3>

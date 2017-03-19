@@ -1,3 +1,5 @@
+<h1>Stacki Docker Pallet</h1>
+
 This is the open source stacki-docker pallet for Stacki based systems. There's noting to pay for here. It's free, as in beer, and free as in your nethers when skinny-dipping. Enjoy.
 
 StackIQ creates application pallets in phases. Phase 1 means an application will run correctly at it's basic usuable level and will be available upon installaction. Generally, there is little if any in the way of security; it's likely to follow the application's simple case documentation. We did that in Phase 1. If you want that, you can check out the 1.13.0 tag but it contains only Docker software, before they created the Community Edition which was, like, last week.
@@ -14,7 +16,7 @@ be good. ***
 
 This is the tl;dr. It's actually kinda long for a tl;dr but it's shorter than the full set of instructions in which I give you far more details than you want.
 
-<h3>tl;dr</h3>
+<h2>tl;dr</h2>
 
 Do the following on the stacki frontend, unless it says "do this on the backend nodes." 
 
@@ -111,6 +113,79 @@ Install your hosts:
 Now power cycle. When they come up, if you've used stacki prometheus,
 you'll have access at: 
 http://frontend.IP:9090 for prometheus
-http://frontendIP.IP:3000 for grafana
+http://frontend.IP:3000 for grafana
 
-<h3>Detailed Explanation</h3>
+<h2>Detailed Explanation</h2>
+
+The stacki-docker pallet deploys Docker Community edition 17.03.0, with a flag to start Docker Swarm Mode. Without swarm mode, Docker runs with TLS certs on every backend and is availble to accept Docker images. In swarm mode, a designated manager (designated by you( and secondary managers with nodes, automatically register themselves to the cluster at boot time, with no intervention from you. 
+
+A demo of NGINX runs by default in Swarm mode because I do a snotload of demos. 
+
+If you don't want this, set that flag to "false." See below in spreadsheet section.
+
+The OS is CentOS 7.3 with updates if you downloaded them. You want to. The pallet provides a 4.10 kernel from elrepo because we are using overlay fs for /var/lib/docker. Overlay is only in preview for CentOS/RHEL 7.2/3 so I've added a modern kernel here. I imagine this helps with cgroups too. (I tossed that out there like I understand those, I don't so don't ask me anything about it.)
+
+<h3>Software</h3>
+You can't make an omelet without killing some chickens so get some software.
+
+Download isos:
+/export should be the largest partition on your frontend. If it's not, you probably messed something up during install. Pick the largest partition then. 
+
+```
+# cd /export
+```
+
+Make a directory to store the isos and then cd to it:
+```
+# mkdir isos
+# cd isos
+```
+
+Download some software:
+```
+# wget https://s3.amazonaws.com/stacki/public/os/centos/7/CentOS-7-x86_64-Everything-1611.iso
+# wget https://s3.amazonaws.com/stacki/public/os/centos/7/CentOS-Updates-7.3-7.x.x86_64.disk1.iso
+# wget https://s3.amazonaws.com/stacki/public/pallets/3.2/open-source/stacki-docker-17.03.0-3.2_phase2.x86_64.disk1.iso
+```
+
+If you want monitoring too get the prometheus pallet:
+```
+# wget https://s3.amazonaws.com/stacki/public/pallets/3.2/open-source/stacki-prometheus-1.0-7.x.x86_64.disk1.iso
+```
+
+There will be documentation on the StackIQ github stacki-prometheus page soon, real soon.
+
+<h3>Frontend Setup</h3>
+The following steps are pretty standard for adding an application pallet. A pallet tends to have configuration and software that needs to run on the frontend before installing backend nodes. It's different than a cart in this respect which only has configuration for backend nodes. 
+
+stacki-docker is a even a little trickier in that the order in which you do things matters in getting the proper result. If you screw-up a step, you can always redo them though without having to start at the absolute beginning.
+
+
+Add/enable/disable pallets:
+
+```
+# stack add pallet *.iso
+# stack list pallet
+```
+
+You should see the newly added CentOS, CentOS-Updates, stacki-docker, and stacki-prometheus if you're using it. They will have dashes in the "BOXES" column which means they aren't active. We mostly don't enable things by default. Unless I tell you I did, in which case you have to undo the enable. 
+
+You can't have two OS pallets. The "os" pallet is a minimal CentOS 7.2 pallet that is designed for the absolute minimal install. We assume there'll be a need for other things, so we add the CentOS and CentOS-Updates pallets. Which means you no longer need the "os" pallet. Disable it. If you don't disable it, weird things happen. (Usually involving failed backend installs but sometimes involving frogs in party hats.) 
+
+Disable the "os" pallet.
+
+```
+# stack disable pallet os
+```
+
+Now we're going to enable the pallets we want to use. Once they are enabled, they are listed in the /etc/yum.repos.d/stacki.repo file and availble via yum to the frontend and all the backends. Same is true of carts.
+
+```
+# stack enable pallet CentOS CentOS-Updates stacki-docker stacki-prometheus
+```
+
+
+
+
+<h3>Backend Setup</h3>
+

@@ -1,10 +1,20 @@
-This is phase2 of the docker pallet.
+StackIQ creates application pallets in phases. Phase 1 means an application will run correctly at it's basic usuable level and will be available upon installaction. Generally, there is little if any in the way of security; it's likely to follow the application's simple case documentation.
 
-** Warning: Don't do any of this if you are using stacki-docker
+Phase 2 means the application will install on first installation of a set of machines securely, working for more complex cases and examples, and more flexible. It's probably production ready. It's more it's better, but it probably needs some further work.
+
+Phase 3 will definitely be production ready, will allow for greater security and flexibility; however, that flexibility will require you do more stuff to get it that way.
+
+All that being said, this is phase2 of the docker pallet. It runs Docker Community Editition (17.03.0), has docker swarm mode baked in (installs and validates it automatically thankyouverymuch) and it TLS protected. If you are interested in just Docker and Docker Swarm Mode, this is the pallet and the instructions you should follow.
+
+*** Warning: Don't do any of this if you are using stacki-docker
 with the stacki-kubernetes pallet. Just follow those docs and you'll
-be good. **
+be good. ***
+
+This is the tl;dr. It's actually kinda long for a tl;dr but it's shorter than the full set of instructions in which I give you far more details than you want.
 
 <h3>tl;dr</h3>
+
+Do the following on the stacki frontend, unless it says "do this on the backend nodes." 
 
 Download isos:
 ```

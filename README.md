@@ -397,9 +397,24 @@ Now run it for real:
 # stack run pallet stacki-docker | bash
 ```
 
-If you are going to use an external registry, (you have to at the moment) and your backend nodes have no access to the internet, set up the frontend to foward traffice from the backend to the internet. 
+<h3>Open the firewall</h3>
 
-This likely means you have two interfaces on the frontend. One that installs backend machines on a private subnet, and one that has access to the outside world. In the demo example I have been using, that's what I have.
+We are using iptables and not firewalld. Firewall rules are held in the database. 
+If you are going to use an external registry, (you have to at the moment) and your backend nodes have no access to the internet, set up the frontend to foward traffic from the backend to the internet. 
+
+You can see the global rules with:
+
+```
+# stack list firewall
+```
+
+And per host rules with:
+
+```
+# stack list host firewall <hostname>
+```
+
+If you have outside access, this likely means you have two interfaces on the frontend. One that installs backend machines on a private subnet, and one that has access to the outside world. In the demo example I have been using, that's what I have.
 
 ```
 [root@stackdock ~]# stack list network
@@ -408,14 +423,37 @@ private: 10.1.0.0    255.255.0.0 10.1.1.1     1500  local  False True
 public:  192.168.0.0 255.255.0.0 192.168.10.1 1500  public False False
 ```
 
-So I want to allow FORWARDING and MASQUERADING from the outside world to/from the backend nodes. Here's a script.
+So I want to allow FORWARDING and MASQUERADING from the outside world to/from the backend nodes. Here's a script that will do that:
 
 ```
+#!/bin/bash
+HOST=`hostname -s`
 
+/opt/stack/bin/stack add host firewall ${HOST} output-network=${1} table=nat rulename=MASQUERADE service="all" protocol="all" action="MASQUERADE" chain="POSTROUTING"
 
-Open your firewall.
+/opt/stack/bin/stack add host firewall ${HOST} network=${1} output-network=private table=filter rulename=FORWARD_PUB service="all" protocol="all" action="ACCEPT" chain="FORWARD"
 
+/opt/stack/bin/stack add host firewall ${HOST} network=private output-network=public table=filter rulename=FORWARD_PRIV service="all" protocol="all" action="ACCEPT" chain="FORWARD"
 
+echo "net.ipv4.ip_forward=1" > /etc/sysctl.conf
+sysctl -p /etc/sysctl.conf
+
+stack sync host firewall ${HOST} restart=true
+```
+
+Run it like this:
+
+```
+chmod 755 fixfw.sh (or whatever you named it)
+
+./fixfw.sh <name of public network from>
+```
+
+Since my public network's name is public I would do it like this:
+```
+./fixfw.sh public
+```
+The firewall should restart, and you should be able to ping outside services from a backend.
 
 
 <h3>Backend Setup</h3>

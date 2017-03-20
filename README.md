@@ -298,6 +298,7 @@ global,True,False,True,True,False,10.1.255.254,True,172.16.10.0/24,testnet,False
 ```
 Opening this in Google Docs looks like this:
 
+[global-docker-attrs-swarm.csv](./src/spreadsheets/global-docker-attrs-swarm.csv)
 
 
 

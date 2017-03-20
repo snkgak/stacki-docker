@@ -326,12 +326,12 @@ With boolean attributes, True, true, yes, Yes, 1 all evaluate to true "true," an
 
 We'll go through each of these values and tell you why it exists, what it will do at the current default setting, and why you might want to change it. This will be valuable when you add backend hosts below and whant to change the role they play in the Docker set-up.
 
-<p>
 key: docker experimental
+
 value: True
+
 description: 
 Turn on experimental features in Docker CE. If using Prometheus, the experiemental feature is needed to get metrics from docker containers, so default is True. (Those metrics are on port 9323 which is the requested port to Prometheus for obtaining this metric information.) If you don't want metrics, set it to False.
-</p>
 
 key: docker.registry external
 value:True
@@ -377,9 +377,41 @@ description: Swarm needs secondary managers for the raft algorithm. Raft algorit
 So edit this appropriately. At minimum you'll have to change the docker.swarm.manager_ip and then we the spreadsheet to the database and then run the pallet to set-up the frontend to install backends properly.
 
 ```
-# stack load attrfile file=global
+[root@stackdock examples]# stack load attrfile file=global-docker-attrs-swarm.csv
+/export/stack/spreadsheets/RCS/global-docker-attrs-swarm.csv,v  <--  /export/stack/spreadsheets/global-docker-attrs-swarm.csv
+file is unchanged; reverting to previous revision 1.1
+done
+/export/stack/spreadsheets/RCS/global-docker-attrs-swarm.csv,v  -->  /export/stack/spreadsheets/global-docker-attrs-swarm.csv
+revision 1.1 (locked)
+done
+```
+Now we want to get the configuration on the frontend to make the install of the backends work.
 
 ```
+To see the kickstart script that's generated and run on the fronted:
+
+# stack run pallet stacki-docker 
+
+Now run it for real:
+
+# stack run pallet stacki-docker | bash
+```
+
+If you are going to use an external registry, (you have to at the moment) and your backend nodes have no access to the internet, set up the frontend to foward traffice from the backend to the internet. 
+
+This likely means you have two interfaces on the frontend. One that installs backend machines on a private subnet, and one that has access to the outside world. In the demo example I have been using, that's what I have.
+
+```
+[root@stackdock ~]# stack list network
+NETWORK  ADDRESS     MASK        GATEWAY      MTU   ZONE   DNS   PXE
+private: 10.1.0.0    255.255.0.0 10.1.1.1     1500  local  False True
+public:  192.168.0.0 255.255.0.0 192.168.10.1 1500  public False False
+```
+
+So I want to allow FORWARDING and MASQUERADING from the outside world to/from the backend nodes. Here's a script.
+
+```
+
 
 Open your firewall.
 

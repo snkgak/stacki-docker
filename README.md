@@ -326,11 +326,12 @@ With boolean attributes, True, true, yes, Yes, 1 all evaluate to true "true," an
 
 We'll go through each of these values and tell you why it exists, what it will do at the current default setting, and why you might want to change it. This will be valuable when you add backend hosts below and whant to change the role they play in the Docker set-up.
 
-```
+<p>
 key: docker experimental
 value: True
 description: 
 Turn on experimental features in Docker CE. If using Prometheus, the experiemental feature is needed to get metrics from docker containers, so default is True. (Those metrics are on port 9323 which is the requested port to Prometheus for obtaining this metric information.) If you don't want metrics, set it to False.
+</p>
 
 key: docker.registry external
 value:True
@@ -372,7 +373,6 @@ description: Only applies if you're using swarm. Every network needs a name or i
 key: docker.swarm.secondary_manager
 value:False
 description: Swarm needs secondary managers for the raft algorithm. Raft algorithms work best with an odd number of nodes. You could do only one manager if you're using a storage backend to save the info, but I have not done that. So we need two more secondary_managers for a total of 3. The secondary manager role is for a limited number of machines so it's False by default. We'll set it to True for a couple of nodes in the hosts attributes spreadsheet below. 
-```
 
 So edit this appropriately. At minimum you'll have to change the docker.swarm.manager_ip and then we the spreadsheet to the database and then run the pallet to set-up the frontend to install backends properly.
 

@@ -296,11 +296,90 @@ The spreadsheet we are first concerned with contains only the global attributes 
 target,docker.registry.external,docker.registry.local,docker.swarm,docker.swarm.demo,docker.swarm.manager,docker.swarm.manager_ip,docker.swarm.node,docker.swarm.overlay_network,docker.swarm.overlay_network_name,docker.swarm.secondary_manager,docker.experimental
 global,True,False,True,True,False,10.1.255.254,True,172.16.10.0/24,testnet,False,True
 ```
-Opening this in Google Docs looks like this:
 
-[global-docker-attrs-swarm.csv](./src/spreadsheets/global-docker-attrs-swarm.csv)
+Here's a prettier view of it:
+
+| target | docker.registry.external | docker.registry.local | docker.swarm | docker.swarm.demo | docker.swarm.manager | docker.swarm.manager_ip | docker.swarm.node | docker.swarm.overlay_network | docker.swarm.overlay_network_name | docker.swarm.secondary_manager | docker.experimental | 
+|--------|--------------------------|-----------------------|--------------|-------------------|----------------------|-------------------------|-------------------|------------------------------|-----------------------------------|--------------------------------|---------------------| 
+| global | True                     | False                 | True         | True              | False                | 10.1.255.254            | True              | 172.16.10.0/24               | testnet                           | False                          | True                | 
 
 
+I'll give a brief explanation here:
+
+"Attributes" or key/value pairs, allow us to customize the install of a bunch of nodes or individual nodes depending how they've been set. This allows us to enable or disable functionality for a set of hosts or individual hosts without having to generate multiple kickstart files. They can be used for configuration settings, or as conditionals in Kickstart files to fire off or not fire off a configuration. 
+
+Attributes allow us flexibility; however, it comes at the cost of complexity. More attributes mean more knobs to turn and buttons to push. It makes for a steeper learning curve. (I would put forth the proposition that even with the added complexity of attributes, we Stacki is still simpler to wrap your head around than Cobbler/MaaS/Satellite/Spacewalk/Foreman or, deity forbid, Ironic. (Which, if you've ever tried to use it, turns out to be a play on it's own name.)
+
+So let's go through this a little more completely so you know what you're getting.
+
+Line 1, the "target" line, is the header line. The targets are the "key" part in the attributes pair. 
+
+Line 2, the "global" line, represents the values for each key in the targets line. 
+
+So attributes = key/value pair. Target = key, global = value. One key, one value and this particular file sets these keys needed to configure Docker at a global level. 
+
+You can set key/value pairs at different levels: there's the "global" level pictured above, the "appliance" level which applies only to appliances of a certain kind, (You only have a backend appliance right now so this is not valid at this point.) and a "host" level which applies only to a specific host. This allows us to change the default global setting for individual hosts or groups of hosts. Values are hierarchical and the last one wins. "host" is the lowest level so if an attribute is set at the "host" level, that's the value that's used. Otherwise, the default "global" value is used.
+
+You'll see two types of values for attributes: booleans and strings. I generally use booleans to turn on or off features. If a feature is turned on, the service might require further configuration, in which case there will be an attribute that sets a value to modify the configuration based on my site requirements.
+
+With boolean attributes, True, true, yes, Yes, 1 all evaluate to true "true," and any value of False, false, no, No, NO, 0, evaluate to true "false."
+
+We'll go through each of these values and tell you why it exists, what it will do at the current default setting, and why you might want to change it. This will be valuable when you add backend hosts below and whant to change the role they play in the Docker set-up.
+
+```
+key: docker experimental
+value: True
+description: 
+Turn on experimental features in Docker CE. If using Prometheus, the experiemental feature is needed to get metrics from docker containers, so default is True. (Those metrics are on port 9323 which is the requested port to Prometheus for obtaining this metric information.) If you don't want metrics, set it to False.
+
+key: docker.registry external
+value:True
+description:
+This says whether or not the Docker registry is reachable via the Interwebz. At this point I'm assuming this it true. Either all of your backend nodes can reach it, or your frontend can. If only your frontend can, then set-up the firewall forwarding configuration below.
+
+key: docker.registry local
+value:False
+description: This is if we are serving a local registry. This is not complete yet. I haven't found a good way to mirror the Docker registry. It was much easier a few revisions ago. I'm open to suggestions here.
+
+key: docker.swarm
+value:True
+description: This is default True because I've been demoing the auto-deploy of Docker Swarm mode. If you are not going to use Docker Swarm, then set this to False.
+
+key: docker.swarm.demo
+value:True
+description: Again, default True because I'm doing demos, like, all the f*ing time. This creates three NGINX replicas in the Docker Swarm. So if you're not using Swarm, definitely set this to False.
+
+key: docker.swarm.manager
+value:False
+description: If you are going to use Swarm, then you need a manager. By default it's set to False because I don't want all my machines to think they're a manager. I'll define one machine as my manager in a host attributes file, which means by default, everything else won't be.
+
+key: docker.swarm.manager_ip
+value:10.1.255.254
+description: I use IPs a lot because it guarantees a bunch of things. Once you know which node is going to be the manager, put it's IP here. Presumably you aren't doing all of this via discovery. If you are, we should talk. 
+
+key: docker.swarm.node
+value:True
+description: By default, all nodes are going to be Swarm workers, unless we set this to False, which we will for the manager and secondary managers. But globally it's true, because this means the least amount of typing for us later.
+
+key: docker.swarm.overlay_network
+value:172.16.10.0/24
+description: Default network for the Docker containers is this one. It's arbitrary. Do you have your own? Put it here in network/cidr notation. Otherwise go with it. It will only be used if you you're using Swarm mode.
+
+key: docker.swarm overlay_network_name
+value:testnet
+description: Only applies if you're using swarm. Every network needs a name or it will feel left out and not a part of the in crowd. You can probably be more imaginative that this. Presumably you're testing this before you throw it into production, so "testnet" might be fine for the moment.
+
+key: docker.swarm.secondary_manager
+value:False
+description: Swarm needs secondary managers for the raft algorithm. Raft algorithms work best with an odd number of nodes. You could do only one manager if you're using a storage backend to save the info, but I have not done that. So we need two more secondary_managers for a total of 3. The secondary manager role is for a limited number of machines so it's False by default. We'll set it to True for a couple of nodes in the hosts attributes spreadsheet below. 
+```
+
+So edit this appropriately. At minimum you'll have to change the docker.swarm.manager_ip and then we the spreadsheet to the database and then run the pallet to set-up the frontend to install backends properly.
+
+```
+# stack load attrfile file=global
+
+```
 
 Open your firewall.
 

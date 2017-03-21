@@ -616,12 +616,13 @@ When run with the docker pallet, there will be some default docker dashboards al
 
 Damn, that took forever. 
 
-Let's sum-up:
-isos are installed
-hosts are in the database
-attrfile is correct and loaded
-partitions are loaded
-stacki-docker has been run
+I sum-up:
+    
+    - isos are installed
+    - hosts are in the database
+    - attrfile is correct and loaded
+    - partitions are loaded
+    - stacki-docker has been run
 
 
 

@@ -509,7 +509,19 @@ done
 revision 1.1 (locked)
 done
 ```
-When these install, if there are other network interfaces, these will be discovered and added to the database. Those can then be plumbed and started by either reinstalling or syncing the network. If you are doing bonding/vlaning/other network thingies, get on the Slack channel or Google Groups and ask the ways in which you can make this work for your site.
+And now I have hosts I can install:
+```
+[root@stackdock ~]# stack list host
+HOST         RACK RANK CPUS APPLIANCE BOX     ENVIRONMENT RUNACTION INSTALLACTION
+stackdock:   0    0    1    frontend  default ----------- os        install
+backend-0-0: 0    0    1    backend   default ----------- os        install
+backend-0-1: 0    1    1    backend   default ----------- os        install
+backend-0-2: 0    2    1    backend   default ----------- os        install
+backend-0-3: 0    3    1    backend   default ----------- os        install
+backend-0-4: 0    4    1    backend   default ----------- os        install
+```
+
+When these do install, if there are other network interfaces, these will be discovered and added to the database. Those can then be plumbed and started by either reinstalling or syncing the network. If you are doing bonding/vlaning/other network thingies, get on the Slack channel or Google Groups and ask the ways in which you can make this work for your site.
 
 So now we have hosts, and I want to apply the docker configuration to those hosts. This is my attributes file with host specifications:
 

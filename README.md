@@ -488,3 +488,158 @@ So now we have hosts, and I want to apply the docker configuration to those host
 | backend-0-3 |                          |                       |              |                   |                      |                         |                   |                              |                                   |                                |                     | 
 | backend-0-4 |                          |                       |              |                   |                      |                         |                   |                              |                                   |                                |                     | 
 
+
+These are the same attributes as headers as in the first atttribute spreadsheet we loaded above. In reality, I usually just combine these into one file. It looks like this:
+
+| target      | docker.registry.external | docker.registry.local | docker.swarm | docker.swarm.demo | docker.swarm.manager | docker.swarm.manager_ip | docker.swarm.node | docker.swarm.overlay_network | docker.swarm.overlay_network_name | docker.swarm.secondary_manager | docker.experimental | 
+|-------------|--------------------------|-----------------------|--------------|-------------------|----------------------|-------------------------|-------------------|------------------------------|-----------------------------------|--------------------------------|---------------------| 
+| global      | True                     | False                 | True         | True              | False                | 10.1.255.254            | True              | 172.16.10.0/24               | testnet                           | False                          | True                | 
+| backend-0-0 |                          |                       |              |                   | True                 |                         | False             |                              |                                   |                                |                     | 
+| backend-0-1 |                          |                       |              |                   |                      |                         | False             |                              |                                   | True                           |                     | 
+| backend-0-2 |                          |                       |              |                   |                      |                         | False             |                              |                                   | True                           |                     | 
+| backend-0-3 |                          |                       |              |                   |                      |                         |                   |                              |                                   |                                |                     | 
+| backend-0-4 |                          |                       |              |                   |                      |                         |                   |                              |                                   |                                |                     | 
+
+
+Same file with the "global" line. It's easier in terms of configuring, but harder in terms of explanation. If you use the combined file, just make sure you set the proper values for your attributes in the global line before loading. 
+
+The attributes are the same as the above explanation so I won't explain them again. I'll just explain what we are changing.
+
+In this particular file, we're going to make backend-0-0 our master, and backend-0-1 and backend-0-2 as secondary managers for docker swarm mode. This provides the consensus machines for the raft algorithm. Remember, the default global will be set for any host that does not change it on the host line in the file. 
+
+To get the config I want: 
+docker.swarm.manager is going to be set to True for backend-0-0 and it's default False for everything else.
+docker.swarm.node is True by default and I'm going to set it to False for backend-0-[0-2] because they are my managers. 
+docker.swarm.secondary_manager is False by default, and I'm setting it to True for backend-0-[1-2]
+docker.swarm.manager_ip is 10.1.255.254 and that's at a global level. It matches backend-0-0 from my host csv file I just recently loaded.
+
+It's easiest to put this in an Excel or Google Spreadsheet and edit your values there. Then export back as CSV and load. The file itself will look like this, but commas are hard to keep track of in vi.
+
+```
+target,docker.registry.external,docker.registry.local,docker.swarm,docker.swarm.demo,docker.swarm.manager,docker.swarm.manager_ip,docker.swarm.node,docker.swarm.overlay_network,docker.swarm.overlay_network_name,docker.swarm.secondary_manager,docker.experimental
+global,True,False,True,True,False,10.1.255.254,True,172.16.10.0/24,testnet,False,True
+backend-0-0,,,,,True,,False,,,,
+backend-0-1,,,,,,,False,,,True,
+backend-0-2,,,,,,,False,,,True,
+backend-0-3,,,,,,,,,,,
+backend-0-4,,,,,,,,,,,
+```
+
+So let's load it:
+
+```
+[root@stackdock examples]# stack load attrfile file=host-docker-attrs-swarm.csv
+/export/stack/spreadsheets/RCS/host-docker-attrs-swarm.csv,v  <--  /export/stack/spreadsheets/host-docker-attrs-swarm.csv
+initial revision: 1.1
+done
+/export/stack/spreadsheets/RCS/host-docker-attrs-swarm.csv,v  -->  /export/stack/spreadsheets/host-docker-attrs-swarm.csv
+revision 1.1 (locked)
+done
+```
+
+We also want to add a partitioning scheme. This is the one I've been using. Even if you don't use this, whatever you put /var/lib/docker in, you'll want the "--mkfsoptions -n fsytpe=1" to properly support the overlay fs Docker is using.
+
+My partitions.csv looks like this:
+```
+Name,Device,Mountpoint,Size,Type,Options
+backend,sda,biosboot,1,biosboot,
+,sda,/boot,1024,xfs,
+,sda,/,16000,xfs,
+,sda,/var,26000,xfs,
+,sda,swap,8192,swap,
+,sda,/var/lib/docker,0,xfs,--grow --mkfsoptions="-n ftype=1"
+```
+
+| Name    | Device | Mountpoint      | Size  | Type     | Options                           | 
+|---------|--------|-----------------|-------|----------|-----------------------------------| 
+| backend | sda    | biosboot        | 1     | biosboot |                                   | 
+|         | sda    | /boot           | 1024  | xfs      |                                   | 
+|         | sda    | /               | 16000 | xfs      |                                   | 
+|         | sda    | /var            | 26000 | xfs      |                                   | 
+|         | sda    | swap            | 8192  | swap     |                                   | 
+|         | sda    | /var/lib/docker | 0     | xfs      | --grow --mkfsoptions="-n ftype=1" | 
+
+So let's load that:
+
+```
+[root@stackdock examples]# stack load storage partition file=docker-partitions.csv
+/export/stack/spreadsheets/RCS/docker-partitions.csv,v  <--  /export/stack/spreadsheets/docker-partitions.csv
+initial revision: 1.1
+done
+/export/stack/spreadsheets/RCS/docker-partitions.csv,v  -->  /export/stack/spreadsheets/docker-partitions.csv
+revision 1.1 (locked)
+done
+```
+
+All that looks good. Hopefully we didn't screw anything up. NOW we want to run the stacki-docker pallet.
+
+```
+[root@stackdock examples]# stack run pallet stacki-docker | bash
+```
+Should output something like this:
+```
+CentOS-7                                                                                                                    | 3.6 kB  00:00:00
+CentOS-Updates-7.3                                                                                                          | 2.9 kB  00:00:00
+stacki-3.2                                                                                                                  | 2.9 kB  00:00:00
+stacki-docker-17.03.0                                                                                                       | 2.9 kB  00:00:00
+stacki-prometheus-1.0                                                                                                       | 2.9 kB  00:00:00
+(1/6): CentOS-7/group_gz                                                                                                    | 155 kB  00:00:00
+(2/6): stacki-prometheus-1.0/primary_db                                                                                     | 3.2 kB  00:00:00
+(3/6): CentOS-7/primary_db                                                                                                  | 5.6 MB  00:00:00
+(4/6): CentOS-Updates-7.3/primary_db                                                                                        | 1.2 MB  00:00:00
+(5/6): stacki-3.2/primary_db                                                                                                |  30 kB  00:00:00
+(6/6): stacki-docker-17.03.0/primary_db                                                                                     | 852 kB  00:00:00
+Package stacki-docker-spreadsheets-0-3.2_phase2.noarch already installed and latest version
+Nothing to do
+RCS file: /opt/stack/sbin/RCS/stacki-listener,v
+done
+RCS file: /usr/lib/systemd/system/RCS/stacki-listener.service,v
+done
+Created symlink from /etc/systemd/system/multi-user.target.wants/stacki-listener.service to /usr/lib/systemd/system/stacki-listener.service.
+```
+
+And your stacki-listener should be listening:
+
+```
+[root@stackdock examples]# systemctl is-active stacki-listener
+active
+```
+(The stacki-listener is the magic to automatically join managers and nodes to the Docker Swarm when it's run in swarm mode. It just listens for a worker token and a manager token, which are generated by the swarm manager on first boot. The other nodes listen and wait until they get a "worker:Token" pair and then they join the cluster. This means you don't have to run any commands to get a node to join the swarm. You'll appreciate this if you're as lazy as I am. The stacki-listener is just python xml-rpc. I would like to rewrite it in go but you could also use the Salt event bus or redis if you want to go that route.)
+
+<h3>Monitoring</h3>
+
+If you want monitoring, the stacki-prometheus pallet should be run at this point, after running the stacki-docker pallet and adding machines. The directions are [here](https://github.com/StackIQ/stacki-prometheus/blob/master/README.md). 
+
+When run with the docker pallet, there will be some default docker dashboards along with machine metrics exporting to prometheus and viewable in Grafana. You're welcome. 
+
+<h3>Install backends</h3>
+
+Damn, that took forever. 
+
+Let's sum-up:
+isos are installed
+hosts are in the database
+attrfile is correct and loaded
+partitions are loaded
+stacki-docker has been run
+
+
+
+Let's install:
+```
+[root@stackdock]# stack set host boot backend action=install
+[root@stackdock]# stack set host attr backend attr=nukedisks value=true
+```
+Now power cycle whatever way you can. 
+
+The first command sets the nodes to install the next boot, assuming your nodes are set to PXE first. (You're running a cluster - why aren't they?) 
+
+Setting the "nukedisks" command will reformat and repartition our disks which is what we want. This is no brownfield - you're getting these under your complete control. 
+
+When these nodes come up, if you have enabled docker.swarm, you should have a bunch of nodes available in docker swarm mode. If you have not enabled docker.swarm, docker will be installed on these nodes and running, ready to pull from the default registry, which I think is hub.docker.io or whatever. 
+
+I have some ideas for how to handle registries. My assumpution is people want external access (hub.docker.io), internal access to a site registry, or a registry local to the cluster, i.e. docker run registry on a given node. If there is some other method you want to see for registries let me know on Slack or on Google Groups, and I'll add it to the next update of the stacki-docker pallet.
+
+Thanks, good luck, come to us with questions. 
+
+

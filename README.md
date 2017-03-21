@@ -38,7 +38,7 @@ Download isos:
 # wget https://s3.amazonaws.com/stacki/public/pallets/3.2/open-source/stacki-docker-17.03.0-3.2_phase2.x86_64.disk1.iso
 
 If you want monitoring:
-# wget https://s3.amazonaws.com/stacki/public/pallets/3.2/open-source/stacki-prometheus-1.0-7.x.x86_64.disk1.iso
+# wget http://stacki.s3.amazonaws.com/public/pallets/3.2/open-source/stacki-prometheus-1.5.2-7.x.x86_64.disk1.iso
 ```
 
 Add/enable/disable pallets:
@@ -164,7 +164,7 @@ a97b53017a97e072054d25d24017bd02  stacki-prometheus-1.0-7.x.x86_64.disk1.iso
 
 If you want monitoring too, get the prometheus pallet:
 ```
-# wget https://s3.amazonaws.com/stacki/public/pallets/3.2/open-source/stacki-prometheus-1.0-7.x.x86_64.disk1.iso
+# wget http://stacki.s3.amazonaws.com/public/pallets/3.2/open-source/stacki-prometheus-1.5.2-7.x.x86_64.disk1.iso
 ```
 
 There will be documentation on the StackIQ github stacki-prometheus page soon, real soon.

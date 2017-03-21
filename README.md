@@ -1,10 +1,10 @@
 <h1>Stacki Docker Pallet</h1>
 
-Really, you should read the whole README.md because that nun in fifth grade told you to read all the directions on your phonix worksheet first. I'm not a nun, you're not in fifth grade, but reading the whole thing will help understand what's happening here.
+Really, you should read the whole README because that nun in fifth grade told you to read all the directions on your phonix worksheet first. I'm not a nun, you're not in fifth grade, but reading the whole thing will help you understand what's happening here.
 
-This is the open source stacki-docker pallet for Stacki based systems. There's noting to pay for here. It's free, as in beer, and free, as in your nethers when skinny-dipping. Enjoy. (Either Docker or skinny-dipping. Tell us about the first, not the second.)
+This is the open source stacki-docker pallet for Stacki based systems. There's nothing to pay for here. It's free, as in beer, and free, as in your nethers when skinny-dipping. Enjoy. (Either Docker, beer, or skinny-dipping. Tell us about the first, not the last.)
 
-StackIQ creates application pallets in phases. Phase 1 means an application will run correctly at its basic usuable level and will be available upon installation. Generally, there is little, if any, in the way of security; it's likely to follow the application's simple case documentation. We did that in Phase 1. If you want that, you can check out the 1.13.0 tag but it contains only Docker software, before they created the Community Edition which was, like, last week.
+StackIQ creates application pallets in phases. Phase 1 means an application will run correctly at its basic usuable level and will be available and functional upon installation. Generally, there is little, if any, in the way of security; it's likely to follow the application's simple case documentation. We did that in Phase 1. If you want that, you can check out the 1.13.0 tag but it contains only Docker software and no configuration for anything. This was before they created the Community Edition which was, like, last week.
 
 Phase 2 means the application will install on first installation on a set of machines securely, working for more complex cases and examples, and more flexible. It's probably production ready. It's more, it's better, but it probably needs some further work to make it more flexible for your use case.
 
@@ -106,7 +106,8 @@ If you want monitoring, use the stacki-prometheus pallet, AFTER
 you've done everything above.
 ```
 stack run pallet stacki-prometheus | bash
-systemctl status sflow-rt
+
+systemctl is-active prometheus
 ```
 
 Install your hosts:
@@ -122,7 +123,7 @@ http://frontend.IP:3000 for grafana
 
 <h2>Detailed Explanation</h2>
 
-The stacki-docker pallet deploys Docker Community edition 17.03.0, with a flag to start Docker Swarm Mode. Without swarm mode, Docker runs with TLS certs on every backend and is availble to accept Docker images. In swarm mode, a designated manager (designated by you along with secondary managers and worker, automatically register themselves to the cluster at boot time, with no intervention from you. 
+The stacki-docker pallet deploys Docker Community edition 17.03.0, with a flag to start Docker Swarm Mode. Without swarm mode, Docker runs docker daemons with TLS certs on every backend and is availble to accept Docker images. In swarm mode, a designated manager, designated by you along with secondary managers and workers, automatically register themselves to the cluster at boot time, with no intervention from you. 
 
 A demo of NGINX runs by default in Swarm mode because I do a snotload of demos. 
 
@@ -159,7 +160,6 @@ These are the md5sums for those pallets:
 15f5c94708d0a2ce5244c5237bb9fb97  CentOS-7-x86_64-Everything-1611.iso
 8c9f2f2608069d0b4792183822e0c8a7  CentOS-Updates-7.3-7.x.x86_64.disk1.iso
 d461efc5592c77d3aed0a1dad279c3f3  stacki-docker-17.03.0-3.2_phase2.x86_64.disk1.iso
-a97b53017a97e072054d25d24017bd02  stacki-prometheus-1.0-7.x.x86_64.disk1.iso
 ```
 
 If you want monitoring too, get the prometheus pallet:
@@ -167,12 +167,12 @@ If you want monitoring too, get the prometheus pallet:
 # wget http://stacki.s3.amazonaws.com/public/pallets/3.2/open-source/stacki-prometheus-1.5.2-7.x.x86_64.disk1.iso
 ```
 
-There will be documentation on the StackIQ github stacki-prometheus page soon, real soon.
+If you want details on how to install monitoring got to the [stacki-prometheus](https://github.com/StackIQ/stacki-prometheus) page. Do that after you've done this.
 
 <h3>Frontend Setup</h3>
 The following steps are pretty standard for adding an application pallet. A pallet tends to have configuration and software that needs to run on the frontend before installing backend nodes. It's different than a cart in this respect which only has configuration for backend nodes. 
 
-stacki-docker is a even a little trickier in that the order in which you do things matters to get the proper result. If you screw-up a step, though, you can always redo them though without having to start at the absolute beginning.
+stacki-docker is a even a little trickier because the order in which you do things matters to get the proper result. If you screw-up a step, though, you can always redo them without having to start at the absolute beginning.
 
 
 Add/enable/disable pallets:
@@ -204,7 +204,7 @@ stacki-docker:     17.03.0 3.2_phase2 x86_64 redhat -------
 stacki-prometheus: 1.0     7.x        x86_64 redhat -------
 ```
 
-You should see the newly added CentOS, CentOS-Updates, stacki-docker, and stacki-prometheus if you're using it. They will have dashes in the "BOXES" column which means they aren't active. We mostly don't enable things by default. Unless I tell you I did, in which case you have to undo the enable. 
+You should see the newly added CentOS, CentOS-Updates, stacki-docker, and stacki-prometheus if you're using it. They will have dashes in the "BOXES" column which means they aren't active. We mostly don't enable things by default, unless I tell you I did, in which case you have to undo the enable. 
 
 You can't have two OS pallets. The "os" pallet is a minimal CentOS 7.2 pallet that is designed for the absolute minimal install. We assume there'll be a need for other things, so we add the CentOS and CentOS-Updates pallets. Which means you no longer need the "os" pallet. Disable it. If you don't disable it, weird things happen. (Usually involving failed backend installs but sometimes involving frogs in party hats.) 
 
@@ -305,7 +305,7 @@ I'll give a brief explanation here:
 
 "Attributes" or key/value pairs, allow us to customize the install of a bunch of nodes or individual nodes depending how they've been set. This allows us to enable or disable functionality for a set of hosts or individual hosts without having to generate multiple kickstart files. They can be used for configuration settings, or as conditionals in Kickstart files to fire off or not fire off a configuration. 
 
-Attributes allow us flexibility; however, it comes at the cost of complexity. More attributes mean more knobs to turn and buttons to push. It makes for a steeper learning curve. (I would put forth the proposition that even with the added complexity of attributes, we Stacki is still simpler to wrap your head around than Cobbler/MaaS/Satellite/Spacewalk/Foreman or, deity forbid, Ironic. (Which, if you've ever tried to use it, turns out to be a play on it's own name.)
+Attributes allow us flexibility; however, it comes at the cost of complexity. More attributes mean more knobs to turn and buttons to push. It makes for a steeper learning curve. (I would put forth the proposition that even with the added complexity of attributes, Stacki is still simpler to wrap your head around than Cobbler/MaaS/Satellite/Spacewalk/Foreman or, deity forbid, Ironic. (Which, if you've ever tried to use it, turns out to be a play on it's own name.)
 
 So let's go through this a little more completely so you know what you're getting.
 
@@ -317,19 +317,18 @@ So attributes = key/value pair. Target = key, global = value. One key, one value
 
 You can set key/value pairs at different levels: there's the "global" level pictured above, the "appliance" level which applies only to appliances of a certain kind, (You only have a backend appliance right now so this is not valid at this point.) and a "host" level which applies only to a specific host. This allows us to change the default global setting for individual hosts or groups of hosts. Values are hierarchical and the last one wins. "host" is the lowest level so if an attribute is set at the "host" level, that's the value that's used. Otherwise, the default "global" value is used.
 
-You'll see two types of values for attributes: booleans and strings. I generally use booleans to turn on or off features. If a feature is turned on, the service might require further configuration, in which case there will be an attribute that sets a value to modify the configuration based on my site requirements.
+You'll see two types of values for attributes: booleans and strings. I generally use booleans to turn on or off features. If a feature is turned on, the service might require further configuration, in which case there will be an attribute that sets a value to modify the configuration based on site requirements.
 
 With boolean attributes, True, true, yes, Yes, 1 all evaluate to true "true," and any value of False, false, no, No, NO, 0, evaluate to true "false."
 
 We'll go through each of these values and tell you why it exists, what it will do at the current default setting, and why you might want to change it. This will be valuable when you add backend hosts below and whant to change the role they play in the Docker set-up.
 
+```
 key: docker experimental
-
 value: True
-
 description: 
 Turn on experimental features in Docker CE. If using Prometheus, the experiemental feature is needed to get metrics from docker containers, so default is True. (Those metrics are on port 9323 which is the requested port to Prometheus for obtaining this metric information.) If you don't want metrics, set it to False.
-```
+
 key: docker.registry external
 value:True
 description: This says whether or not the Docker registry is reachable 
@@ -340,8 +339,8 @@ frontend can, then set-up the firewall forwarding configuration below.
 key: docker.registry local
 value:False
 description: This is if we are serving a local registry. 
-This is not complete yet. 
-It will likely be a fix in the next point release, assuming there is one.
+This is not complete yet. It will likely be a fix in 
+the next point release, assuming there is one.
 
 key: docker.swarm
 value:True
@@ -486,7 +485,7 @@ The firewall should restart, and you should be able to ping outside services fro
 
 <h3>Backend Setup</h3>
 
-This pallet assumes that you have a host spreadsheet file. If you don't you, should either build one or use discovery to install backend machines with just the basic stacki/os pallets. Then you'll have hosts and you can set up the attributes spreadsheet.
+This pallet assumes that you have a host spreadsheet file. If you don't, you should either build one or use discovery to install backend machines with just the basic stacki/os pallets. Then you'll have hosts and you can set up the attributes spreadsheet.
 
 This is what my demo-hosts.csv looks like:
 

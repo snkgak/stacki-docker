@@ -453,3 +453,39 @@ The firewall should restart, and you should be able to ping outside services fro
 
 <h3>Backend Setup</h3>
 
+This pallet assumes that you have a host spreadsheet file. If you don't you, should either build one or use discovery to install backend machines with just the basic stacki/os pallets. Then you'll have hosts and you can set up the attributes spreadsheet.
+
+This is what my demo-hosts.csv looks like:
+
+| NAME        | INTERFACE HOSTNAME | DEFAULT | APPLIANCE | RACK | RANK | IP           | MAC               | INTERFACE | NETWORK | CHANNEL | OPTIONS | VLAN | 
+|-------------|--------------------|---------|-----------|------|------|--------------|-------------------|-----------|---------|---------|---------|------| 
+| backend-0-0 |                    | True    | backend   | 0    | 0    | 10.1.255.254 | c8:1f:66:cb:e7:43 | em1       | private |         |         |      | 
+| backend-0-1 |                    | True    | backend   | 0    | 1    | 10.1.255.253 | c8:1f:66:cb:33:74 | em1       | private |         |         |      | 
+| backend-0-2 |                    | True    | backend   | 0    | 2    | 10.1.255.252 | c8:1f:66:cb:e5:7d | em1       | private |         |         |      | 
+| backend-0-3 |                    | True    | backend   | 0    | 3    | 10.1.255.251 | c8:1f:66:cb:37:75 | em1       | private |         |         |      | 
+| backend-0-4 |                    | True    | backend   | 0    | 4    | 10.1.255.250 | c8:1f:66:cd:d3:c0 | em1       | private |         |         |      | 
+
+I'm going to load that:
+
+```
+[root@stackdock ~]# stack load hostfile file=hosts.csv
+/export/stack/spreadsheets/RCS/hosts.csv,v  <--  /export/stack/spreadsheets/hosts.csv
+initial revision: 1.1
+done
+/export/stack/spreadsheets/RCS/hosts.csv,v  -->  /export/stack/spreadsheets/hosts.csv
+revision 1.1 (locked)
+done
+```
+When these install, if there are other network interfaces, these will be discovered and added to the database. Those can then be plumbed and started by either reinstalling or syncing the network. If you are doing bonding/vlaning/other network thingies, get on the Slack channel or Google Groups and ask the ways in which you can make this work for your site.
+
+So now we have hosts, and I want to apply the docker configuration to those hosts. This is my attributes file with host specifications:
+
+| target      | docker.registry.external | docker.registry.local | docker.swarm | docker.swarm.demo | docker.swarm.manager | docker.swarm.manager_ip | docker.swarm.node | docker.swarm.overlay_network | docker.swarm.overlay_network_name | docker.swarm.secondary_manager | docker.experimental | 
+|-------------|--------------------------|-----------------------|--------------|-------------------|----------------------|-------------------------|-------------------|------------------------------|-----------------------------------|--------------------------------|---------------------| 
+| global      | True                     | False                 | True         | True              | False                | 10.1.255.254            | True              | 172.16.10.0/24               | testnet                           | False                          | True                | 
+| backend-0-0 |                          |                       |              |                   | True                 |                         | False             |                              |                                   |                                |                     | 
+| backend-0-1 |                          |                       |              |                   |                      |                         | False             |                              |                                   | True                           |                     | 
+| backend-0-2 |                          |                       |              |                   |                      |                         | False             |                              |                                   | True                           |                     | 
+| backend-0-3 |                          |                       |              |                   |                      |                         |                   |                              |                                   |                                |                     | 
+| backend-0-4 |                          |                       |              |                   |                      |                         |                   |                              |                                   |                                |                     | 
+

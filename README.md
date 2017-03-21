@@ -81,12 +81,7 @@ It worked if the listener is listening:
 systemctl status stacki-listener
 ```
 
-Now add hosts. You have a hosts file right?
-```
-# stack load hostfile file=hosts.csv
-```
-
-Now prep a host spreadsheet. Add your hosts.
+Now add hosts. You have a hosts file right? Prep a host spreadsheet if you don't first.
 ```
 # stack load hostfile file=hosts.csv 
 ```

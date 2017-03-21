@@ -340,7 +340,7 @@ This says whether or not the Docker registry is reachable via the Interwebz. At 
 
 key: docker.registry local
 value:False
-description: This is if we are serving a local registry. This is not complete yet. I haven't found a good way to mirror the Docker registry. It was much easier a few revisions ago. I'm open to suggestions here.
+description: This is if we are serving a local registry. This is not complete yet. It will likely be a fix in the next point release, assuming there is one.
 
 key: docker.swarm
 value:True

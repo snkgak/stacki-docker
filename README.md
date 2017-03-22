@@ -93,7 +93,9 @@ with your hosts and the settings.
 If you want detailed info on settings, see below.
 You're the one following the tl;dr. Suck it up cowboy.
 ```
-# stack load attrfile file=host-docker-swarm.csv
+# stack load attrfile file=host-docker-attrs-swarm.csv
+
+
 ```
 
 Add partitions. This works for me. You may want to do something else.
